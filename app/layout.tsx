@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 import "./globals.css";
-
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-poppins",
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,8 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} font-sans antialiased bg-buttermilk text-navy`}
+        className="font-sans antialiased bg-buttermilk text-navy"
       >
+        <Toaster position="top-right" />
         {children}
       </body>
     </html>
