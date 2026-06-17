@@ -1,40 +1,53 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GetCode
 
-## Getting Started
+GetCode is a secure verification portal for classroom attendance code claiming. Instructors upload session spreadsheets containing lists of authorized student emails and unique claim codes via the admin dashboard. Attendees select their active session, authenticate their email via a 6-digit One-Time Password sent through Resend, and copy their unique attendance code inline to confirm their claim.
 
-First, run the development server:
+## Setup Local Environment
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Create a `.env.local` file at the root of the project with the following configuration:
+
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-client-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-secret-service-role-key
+
+# Email Dispatch
+RESEND_API_KEY=your-resend-api-key
+
+# Admin Configuration
+ADMIN_PASSWORD=your-secure-admin-password
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Key Retrieval Guidance:
+1. **Supabase URL & Anon Key**: Retrieve these from the **API Keys** section under **Project Settings > API** in your Supabase Dashboard.
+2. **Supabase Service Role Key**: Retrieve this from the same section in your Supabase Dashboard. *Keep this key secret as it bypasses Row Level Security (RLS) policies.*
+3. **Resend API Key**: Create a free account at [resend.com](https://resend.com), navigate to **API Keys**, and generate a token.
+4. **Admin Password**: Set a custom password of your choice to access `/admin/dashboard`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Running the Application Locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+2. Start the local Next.js development server:
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. Open your browser and navigate to `http://localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploying to Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# GetCode
->>>>>>> bbd46cf84e2ef95aef2035f3c6ab87be23dbfe85
+1. Make sure you have the Vercel CLI installed, or push your project to a GitHub repository.
+2. Initialize Vercel deployment:
+   ```bash
+   vercel
+   ```
+3. Set your environment variables in the Vercel Dashboard project settings matching the `.env.local` keys.
+4. Run a production build deployment:
+   ```bash
+   vercel --prod
+   ```

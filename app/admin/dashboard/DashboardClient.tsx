@@ -94,7 +94,7 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 active:scale-95 transition-all rounded-xl border border-red-200"
+          className="flex items-center gap-2 h-12 px-4 text-sm font-semibold text-red-600 hover:bg-red-50 active:scale-95 transition-all rounded-xl border border-red-200"
         >
           <LogOut className="h-4 w-4" />
           <span>Logout</span>
@@ -157,7 +157,7 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
             <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto pr-1">
               {sessions.length === 0 ? (
                 <div className="text-center py-8 text-navy/50 text-sm">
-                  No sessions found. Create your first one on the left.
+                  No sessions yet. Upload your first session above.
                 </div>
               ) : (
                 sessions.map((session) => (
@@ -187,7 +187,7 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
 
                     <button
                       disabled
-                      className="self-end sm:self-center px-4 py-2 bg-brand/10 text-brand text-xs font-semibold rounded-xl hover:bg-brand/20 transition-all cursor-not-allowed opacity-60"
+                      className="self-end sm:self-center h-12 px-4 flex items-center justify-center bg-brand/10 text-brand text-xs font-semibold rounded-xl hover:bg-brand/20 transition-all cursor-not-allowed opacity-60"
                     >
                       View
                     </button>

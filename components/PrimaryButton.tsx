@@ -16,7 +16,7 @@ export default function PrimaryButton({
   return (
     <button
       disabled={disabled || isLoading}
-      className={`w-full rounded-xl bg-brand text-white font-semibold py-3 px-4 transition-all hover:bg-brand/90 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2 ${className}`}
+      className={`w-full h-12 rounded-xl bg-brand text-white font-semibold px-4 transition-all hover:bg-brand/90 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2 ${className}`}
       {...props}
     >
       {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}

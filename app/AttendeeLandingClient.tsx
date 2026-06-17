@@ -6,6 +6,7 @@ import Card from "@/components/Card";
 import TextInput from "@/components/TextInput";
 import OTPInput from "@/components/OTPInput";
 import PrimaryButton from "@/components/PrimaryButton";
+import { getSessions } from "@/app/admin/dashboard/actions";
 import { ArrowLeft, Check, Copy, RefreshCw, AlertCircle } from "lucide-react";
 
 interface Session {
@@ -27,6 +28,8 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
   const [otp, setOtp] = useState("");
   const [attendanceCode, setAttendanceCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSessionsLoading, setIsSessionsLoading] = useState(true);
+  const [sessions, setSessions] = useState<Session[]>(initialSessions);
   const [emailError, setEmailError] = useState("");
   const [copied, setCopied] = useState(false);
   
@@ -42,6 +45,23 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
     }
     return () => clearTimeout(timer);
   }, [countdown]);
+
+  // Load sessions client-side on mount to show active state
+  useEffect(() => {
+    async function loadSessions() {
+      try {
+        const result = await getSessions();
+        if (result.success && result.sessions) {
+          setSessions(result.sessions);
+        }
+      } catch (err) {
+        console.error("Failed to load sessions:", err);
+      } finally {
+        setIsSessionsLoading(false);
+      }
+    }
+    loadSessions();
+  }, []);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,6 +203,8 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
     setEmailError("");
   };
 
+  const hasNoSessions = !isSessionsLoading && sessions.length === 0;
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4">
       <div className="w-full max-w-[420px]">
@@ -194,7 +216,33 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
         </div>
 
         <Card className="w-full">
-          {step === 1 ? (
+          {hasNoSessions ? (
+            /* Empty State: No Sessions Found */
+            <div className="flex flex-col gap-5 text-center py-4">
+              <div className="mx-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-1">
+                <AlertCircle className="h-6 w-6 text-brand" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-navy">No active sessions</h2>
+                <p className="text-sm text-navy/60 mt-1.5 leading-relaxed">
+                  No active sessions right now. Check back after class.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsSessionsLoading(true);
+                  getSessions().then((res) => {
+                    if (res.success && res.sessions) setSessions(res.sessions);
+                    setIsSessionsLoading(false);
+                  });
+                }}
+                className="flex items-center justify-center gap-1.5 text-xs font-semibold text-brand hover:underline mt-2"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                <span>Retry fetching sessions</span>
+              </button>
+            </div>
+          ) : step === 1 ? (
             /* Step 1: Session & Email Selection */
             <div className="flex flex-col gap-5">
               <div className="text-center">
@@ -213,17 +261,20 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                     id="sessionSelect"
                     value={selectedSession}
                     onChange={(e) => setSelectedSession(e.target.value)}
-                    className="w-full rounded-xl border-[1.5px] border-brand/40 bg-white/50 px-4 py-3 font-medium text-navy transition-all focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none"
+                    disabled={isLoading || isSessionsLoading}
+                    className="w-full rounded-xl border-[1.5px] border-brand/40 bg-white/50 px-4 py-3 font-medium text-navy transition-all focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none disabled:opacity-50"
                   >
-                    <option value="" disabled>-- Choose a session --</option>
-                    {initialSessions.length === 0 ? (
-                      <option disabled>No sessions available</option>
+                    {isSessionsLoading ? (
+                      <option value="">Loading sessions...</option>
                     ) : (
-                      initialSessions.map((session) => (
-                        <option key={session.id} value={session.id}>
-                          {session.name}
-                        </option>
-                      ))
+                      <>
+                        <option value="" disabled>-- Choose a session --</option>
+                        {sessions.map((session) => (
+                          <option key={session.id} value={session.id}>
+                            {session.name}
+                          </option>
+                        ))}
+                      </>
                     )}
                   </select>
                 </div>
@@ -239,11 +290,11 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                     if (emailError) setEmailError("");
                   }}
                   error={emailError}
-                  disabled={isLoading}
+                  disabled={isLoading || isSessionsLoading}
                 />
 
                 <div className="flex flex-col gap-2.5">
-                  <PrimaryButton type="submit" isLoading={isLoading}>
+                  <PrimaryButton type="submit" isLoading={isLoading || isSessionsLoading} disabled={isSessionsLoading}>
                     Send Verification Code
                   </PrimaryButton>
                   <p className="text-center text-xs text-navy/50">
