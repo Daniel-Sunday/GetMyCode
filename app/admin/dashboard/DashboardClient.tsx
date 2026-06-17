@@ -1,37 +1,38 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Card from "@/components/Card";
 import TextInput from "@/components/TextInput";
 import PrimaryButton from "@/components/PrimaryButton";
 import { logoutAdmin } from "../actions";
+import { uploadSession, getSessions } from "./actions";
 import { LogOut, PlusCircle, Database, Calendar, Users, CheckCircle } from "lucide-react";
 
-// Mock data for UI presentation as requested
-const MOCK_SESSIONS = [
-  {
-    id: "1",
-    name: "Week 1 Orientation",
-    created_at: "2026-06-10T10:00:00Z",
-    attendees_count: 45,
-    claimed_count: 42,
-  },
-  {
-    id: "2",
-    name: "Week 2 Frontend Basics",
-    created_at: "2026-06-17T14:30:00Z",
-    attendees_count: 38,
-    claimed_count: 29,
-  },
-];
+interface Session {
+  id: string;
+  name: string;
+  created_at: string;
+  attendees_count: number;
+  claimed_count: number;
+}
 
-export default function DashboardClient() {
+interface DashboardClientProps {
+  initialSessions: Session[];
+}
+
+export default function DashboardClient({ initialSessions }: DashboardClientProps) {
   const [sessionName, setSessionName] = useState("");
   const [csvData, setCsvData] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessions, setSessions] = useState<Session[]>(initialSessions);
   const router = useRouter();
+
+  // Sync state if initialSessions prop changes (e.g., from server-side refetches)
+  useEffect(() => {
+    setSessions(initialSessions);
+  }, [initialSessions]);
 
   const handleLogout = async () => {
     try {
@@ -44,7 +45,15 @@ export default function DashboardClient() {
     }
   };
 
-  const handleUpload = (e: React.FormEvent) => {
+  const refreshSessionsList = async () => {
+    const res = await getSessions();
+    if (res.success && res.sessions) {
+      setSessions(res.sessions);
+    }
+    router.refresh();
+  };
+
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sessionName.trim()) {
       toast.error("Session name is required");
@@ -56,13 +65,23 @@ export default function DashboardClient() {
     }
 
     setIsLoading(true);
-    // UI-only logic check for now
-    setTimeout(() => {
+    try {
+      const result = await uploadSession(sessionName, csvData);
+      if (result.success) {
+        toast.success(`Session uploaded successfully — ${result.count || 0} attendees added`);
+        setSessionName("");
+        setCsvData("");
+        await refreshSessionsList();
+      } else {
+        toast.error(result.error || "Upload failed");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred during upload.";
+      toast.error(errorMessage);
+      console.error(err);
+    } finally {
       setIsLoading(false);
-      toast.success("Session uploaded successfully (UI Mocked)");
-      setSessionName("");
-      setCsvData("");
-    }, 1000);
+    }
   };
 
   return (
@@ -135,40 +154,46 @@ export default function DashboardClient() {
               <h2 className="text-xl font-bold text-navy">Sessions</h2>
             </div>
 
-            <div className="flex flex-col gap-4">
-              {MOCK_SESSIONS.map((session) => (
-                <div
-                  key={session.id}
-                  className="bg-white/40 border border-brand/10 hover:border-brand/25 transition-all rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                >
-                  <div className="flex flex-col gap-1.5">
-                    <h3 className="font-bold text-navy text-base leading-none">
-                      {session.name}
-                    </h3>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-navy/60 mt-1">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3.5 w-3.5 text-navy/40" />
-                        {new Date(session.created_at).toLocaleDateString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3.5 w-3.5 text-navy/40" />
-                        {session.attendees_count} Attendees
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CheckCircle className="h-3.5 w-3.5 text-navy/40" />
-                        {session.claimed_count} Claimed
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    disabled
-                    className="self-end sm:self-center px-4 py-2 bg-brand/10 text-brand text-xs font-semibold rounded-xl hover:bg-brand/20 transition-all cursor-not-allowed opacity-60"
-                  >
-                    View
-                  </button>
+            <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto pr-1">
+              {sessions.length === 0 ? (
+                <div className="text-center py-8 text-navy/50 text-sm">
+                  No sessions found. Create your first one on the left.
                 </div>
-              ))}
+              ) : (
+                sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="bg-white/40 border border-brand/10 hover:border-brand/25 transition-all rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    <div className="flex flex-col gap-1.5">
+                      <h3 className="font-bold text-navy text-base leading-none">
+                        {session.name}
+                      </h3>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-navy/60 mt-1">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5 text-navy/40" />
+                          {new Date(session.created_at).toLocaleDateString()}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5 text-navy/40" />
+                          {session.attendees_count} Attendees
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <CheckCircle className="h-3.5 w-3.5 text-navy/40" />
+                          {session.claimed_count} Claimed
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      disabled
+                      className="self-end sm:self-center px-4 py-2 bg-brand/10 text-brand text-xs font-semibold rounded-xl hover:bg-brand/20 transition-all cursor-not-allowed opacity-60"
+                    >
+                      View
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </Card>
