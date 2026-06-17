@@ -7,8 +7,8 @@ import Card from "@/components/Card";
 import TextInput from "@/components/TextInput";
 import PrimaryButton from "@/components/PrimaryButton";
 import { logoutAdmin } from "../actions";
-import { uploadSession, getSessions } from "./actions";
-import { LogOut, PlusCircle, Database, Calendar, Users, CheckCircle } from "lucide-react";
+import { uploadSession, getSessions, deleteSession } from "./actions";
+import { LogOut, PlusCircle, Database, Calendar, Users, CheckCircle, Eye, Trash2, AlertTriangle } from "lucide-react";
 
 interface Session {
   id: string;
@@ -27,6 +27,9 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
   const [csvData, setCsvData] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessions, setSessions] = useState<Session[]>(initialSessions);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
 
   // Sync state if initialSessions prop changes (e.g., from server-side refetches)
@@ -51,6 +54,28 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
       setSessions(res.sessions);
     }
     router.refresh();
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!sessionToDelete) return;
+    setIsDeleting(true);
+    try {
+      const result = await deleteSession(sessionToDelete.id);
+      if (result.success) {
+        toast.success(`Session "${sessionToDelete.name}" deleted successfully`);
+        setIsDeleteModalOpen(false);
+        setSessionToDelete(null);
+        await refreshSessionsList();
+      } else {
+        toast.error(result.error || "Failed to delete session");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred during deletion.";
+      toast.error(errorMessage);
+      console.error(err);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleUpload = async (e: React.FormEvent) => {
@@ -185,12 +210,26 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                       </div>
                     </div>
 
-                    <button
-                      disabled
-                      className="self-end sm:self-center h-12 px-4 flex items-center justify-center bg-brand/10 text-brand text-xs font-semibold rounded-xl hover:bg-brand/20 transition-all cursor-not-allowed opacity-60"
-                    >
-                      View
-                    </button>
+                    <div className="flex items-center gap-2 self-end sm:self-center">
+                      <button
+                        disabled
+                        className="h-12 w-12 flex items-center justify-center bg-brand/10 text-brand rounded-xl hover:bg-brand/20 transition-all cursor-not-allowed opacity-60"
+                        title="View session details (coming soon)"
+                      >
+                        <Eye className="h-5 w-5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSessionToDelete(session);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="h-12 w-12 flex items-center justify-center bg-red-50 text-red-600 rounded-xl hover:bg-red-100 hover:text-red-700 active:scale-95 transition-all border border-red-100 cursor-pointer"
+                        title="Delete session"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -198,6 +237,66 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
           </div>
         </Card>
       </div>
+
+      {/* Delete Session Warning Modal */}
+      {isDeleteModalOpen && sessionToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/60 backdrop-blur-xs"
+          onClick={() => {
+            if (!isDeleting) {
+              setIsDeleteModalOpen(false);
+              setSessionToDelete(null);
+            }
+          }}
+        >
+          <div
+            className="bg-cream rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col items-center text-center gap-6 border border-brand/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Warning Icon */}
+            <div className="bg-red-50 p-4 rounded-full border border-red-100 flex items-center justify-center">
+              <AlertTriangle className="h-10 w-10 text-red-600" />
+            </div>
+
+            {/* Content */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xl font-bold text-navy font-poppins">
+                Delete Session?
+              </h3>
+              <p className="text-sm text-navy/70 leading-relaxed">
+                This will permanently delete this session and all {sessionToDelete.attendees_count} attendee records inside it. Any attendees who have not yet claimed their code will lose access. This cannot be undone.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="grid grid-cols-2 gap-3 w-full">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setSessionToDelete(null);
+                }}
+                className="h-12 border-2 border-navy text-navy font-semibold rounded-xl hover:bg-navy/5 active:scale-[0.98] transition-all text-sm flex items-center justify-center cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="h-12 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all text-sm flex items-center justify-center cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  "Yes, Delete It"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

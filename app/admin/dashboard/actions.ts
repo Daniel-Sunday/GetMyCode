@@ -193,3 +193,27 @@ export async function getSessions() {
     return { success: false, error: errorMessage };
   }
 }
+
+export async function deleteSession(sessionId: string) {
+  try {
+    if (!sessionId) {
+      return { success: false, error: "Session ID is required" };
+    }
+
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("sessions")
+      .delete()
+      .eq("id", sessionId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Delete session error:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred during deletion.";
+    return { success: false, error: errorMessage };
+  }
+}
