@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import Card from "@/components/Card";
 import PrimaryButton from "@/components/PrimaryButton";
+import { createClient } from "@/lib/supabase/client";
 import { Check, Copy, RefreshCw } from "lucide-react";
 
 function RevealContent() {
@@ -19,6 +20,17 @@ function RevealContent() {
       setCopied(true);
       toast.success("Code copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
+
+      // Mark code as claimed in Supabase once copied
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("attendees")
+        .update({ is_claimed: true })
+        .eq("code", code);
+
+      if (error) {
+        console.error("Failed to mark code as claimed:", error);
+      }
     } catch (err) {
       toast.error("Failed to copy code");
       console.error(err);
@@ -53,7 +65,7 @@ function RevealContent() {
           </PrimaryButton>
 
           <button
-            onClick={() => router.push("/verify")}
+            onClick={() => router.push("/")}
             className="flex items-center justify-center gap-1.5 text-sm font-semibold text-navy/60 hover:text-navy py-2 transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
