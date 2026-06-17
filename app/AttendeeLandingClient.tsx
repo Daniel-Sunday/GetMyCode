@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Card from "@/components/Card";
 import TextInput from "@/components/TextInput";
 import OTPInput from "@/components/OTPInput";
 import PrimaryButton from "@/components/PrimaryButton";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, Copy, RefreshCw, AlertCircle } from "lucide-react";
 
 interface Session {
   id: string;
@@ -22,16 +21,17 @@ interface AttendeeLandingClientProps {
 }
 
 export default function AttendeeLandingClient({ initialSessions }: AttendeeLandingClientProps) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedSession, setSelectedSession] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [attendanceCode, setAttendanceCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [copied, setCopied] = useState(false);
   
   // Timer for resend code
   const [countdown, setCountdown] = useState(0);
-  const router = useRouter();
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -109,7 +109,20 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
 
       if (response.ok && data.success) {
         toast.success("Code verified successfully!");
-        router.push(`/reveal?code=${encodeURIComponent(data.attendanceCode)}`);
+        setAttendanceCode(data.attendanceCode);
+        setStep(3);
+
+        // Silent background API request to mark code as claimed
+        fetch("/api/claim-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            sessionId: selectedSession,
+          }),
+        }).catch((err) => {
+          console.error("Silent background code claim failed:", err);
+        });
       } else {
         toast.error(data.error || "Invalid verification code");
       }
@@ -148,6 +161,26 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(attendanceCode);
+      setCopied(true);
+      toast.success("Code copied!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy code");
+    }
+  };
+
+  const handleReset = () => {
+    setStep(1);
+    setEmail("");
+    setSelectedSession("");
+    setOtp("");
+    setAttendanceCode("");
+    setEmailError("");
   };
 
   return (
@@ -219,7 +252,7 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                 </div>
               </form>
             </div>
-          ) : (
+          ) : step === 2 ? (
             /* Step 2: OTP Verification */
             <div className="flex flex-col gap-6">
               <button
@@ -261,6 +294,54 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                   )}
                 </div>
               </form>
+            </div>
+          ) : (
+            /* Step 3: Code Reveal View */
+            <div className="flex flex-col gap-6 text-center animate-reveal">
+              <div>
+                <h1 className="text-2xl font-bold text-navy">Here&apos;s your code</h1>
+                <p className="text-sm text-navy/60 mt-1.5 leading-relaxed">
+                  Copy it and paste it on the Imodigitalcity website to mark your attendance
+                </p>
+              </div>
+
+              {/* Code Display Ticket/Badge */}
+              <div className="bg-brand text-buttermilk rounded-2xl p-6 py-8 shadow-md border-2 border-brand relative group overflow-hidden select-all">
+                <div className="absolute top-0 bottom-0 left-0 w-2.5 flex flex-col justify-around py-2 -ml-[6px]">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="w-2.5 h-2.5 bg-cream rounded-full" />
+                  ))}
+                </div>
+                <div className="absolute top-0 bottom-0 right-0 w-2.5 flex flex-col justify-around py-2 -mr-[6px]">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="w-2.5 h-2.5 bg-cream rounded-full" />
+                  ))}
+                </div>
+                
+                <span className="text-4xl font-extrabold tracking-widest font-mono">
+                  {attendanceCode}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-3.5 items-center w-full">
+                <PrimaryButton onClick={handleCopy} className="flex gap-2">
+                  {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                  <span>{copied ? "Copied ✓" : "Copy Code"}</span>
+                </PrimaryButton>
+
+                <div className="flex items-center gap-1.5 text-xs text-navy/60">
+                  <AlertCircle className="h-4 w-4 text-brand" />
+                  <span>This code is now yours. Do not share it.</span>
+                </div>
+
+                <button
+                  onClick={handleReset}
+                  className="flex items-center justify-center gap-1.5 text-xs font-semibold text-navy/50 hover:text-navy mt-4 transition-colors"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  <span>Verify another code</span>
+                </button>
+              </div>
             </div>
           )}
         </Card>

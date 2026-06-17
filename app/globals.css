@@ -19,3 +19,18 @@ body {
   background-color: var(--background);
   color: var(--foreground);
 }
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-reveal {
+  animation: reveal-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
