@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 export default function NavBar() {
   const pathname = usePathname();
 
-  const isGetCodeActive = pathname === "/" || pathname === "/verify";
+  const isGetMyCodeActive = pathname === "/" || pathname === "/verify";
   const isAdminActive = pathname.startsWith("/admin");
 
   return (
@@ -17,7 +17,7 @@ export default function NavBar() {
         href="/"
         className="text-sm sm:text-base md:text-lg font-bold text-brand font-sans tracking-widest select-none transition-all"
       >
-        GETCODE
+        GETMYCODE
       </Link>
 
       {/* Tabs */}
@@ -25,11 +25,11 @@ export default function NavBar() {
         <Link
           href="/"
           className={`relative h-full flex items-center text-sm font-semibold transition-all duration-200 ${
-            isGetCodeActive ? "text-brand" : "text-navy/60 hover:text-navy"
+            isGetMyCodeActive ? "text-brand" : "text-navy/60 hover:text-navy"
           }`}
         >
           <span>Get Code</span>
-          {isGetCodeActive && (
+          {isGetMyCodeActive && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full" />
           )}
         </Link>

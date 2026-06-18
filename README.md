@@ -1,6 +1,6 @@
 # GetMyCode
 
-GetCode is a secure verification portal for classroom attendance code claiming. Instructors upload session spreadsheets containing lists of authorized student emails and unique claim codes via the admin dashboard. Attendees select their active session, authenticate their email via a 6-digit One-Time Password sent through Resend, and copy their unique attendance code inline to confirm their claim.
+GetMyCode is a secure verification portal for classroom attendance code claiming. Instructors upload session spreadsheets containing lists of authorized student emails and unique claim codes via the admin dashboard. Attendees select their active session, authenticate their email via a 6-digit One-Time Password sent through Resend, and copy their unique attendance code inline to confirm their claim.
 
 ## Setup Local Environment
 

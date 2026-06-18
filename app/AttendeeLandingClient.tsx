@@ -208,12 +208,7 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4">
       <div className="w-full max-w-[420px]">
-        {/* App Title Logo */}
-        <div className="text-center mb-6">
-          <span className="text-xl font-bold tracking-wider text-brand font-sans">
-            GETCODE
-          </span>
-        </div>
+
 
         <Card className="w-full">
           {hasNoSessions ? (

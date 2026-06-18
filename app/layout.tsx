@@ -4,7 +4,7 @@ import NavBar from "@/components/NavBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GetCode",
+  title: "GetMyCode",
   description: "Secure attendance code verification portal",
 };
 

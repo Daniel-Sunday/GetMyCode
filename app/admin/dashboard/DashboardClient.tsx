@@ -114,7 +114,7 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
       {/* Header Bar */}
       <header className="flex justify-between items-center bg-cream shadow-sm rounded-2xl p-4 md:px-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-navy">GetCode Admin</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-navy">GetMyCode Admin</h1>
           <p className="text-xs md:text-sm text-navy/60">Manage your OTP sessions and attendees</p>
         </div>
         <button

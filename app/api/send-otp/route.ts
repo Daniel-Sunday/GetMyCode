@@ -82,12 +82,12 @@ export async function POST(request: Request) {
     const resend = new Resend(resendApiKey);
 
     const { error: emailError } = await resend.emails.send({
-      from: "GetCode Verification <onboarding@resend.dev>",
+      from: "GetMyCode Verification <onboarding@resend.dev>",
       to: trimmedEmail,
       subject: "Your Attendance Verification Code",
       html: `
         <div style="font-family: 'Poppins', sans-serif, Arial; background-color: #fffdf0; padding: 32px; border-radius: 16px; border: 1px solid rgba(40, 92, 204, 0.2); max-width: 480px; margin: 0 auto; color: #0f1f4b;">
-          <h2 style="color: #285ccc; font-weight: 700; margin-bottom: 16px;">GetCode Verification</h2>
+          <h2 style="color: #285ccc; font-weight: 700; margin-bottom: 16px;">GetMyCode Verification</h2>
           <p style="font-size: 16px; line-height: 1.5; margin-bottom: 24px;">Your 6-digit verification code is:</p>
           <div style="background-color: #fff2bd; border: 2px dashed rgba(40, 92, 204, 0.4); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
             <span style="font-size: 36px; font-weight: 800; tracking: 0.1em; color: #285ccc; font-family: monospace;">${token}</span>
