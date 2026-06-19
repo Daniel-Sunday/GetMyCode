@@ -33,6 +33,7 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
   const [emailError, setEmailError] = useState("");
   const [isEmailNotFound, setIsEmailNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isRestored, setIsRestored] = useState(false);
   
   // Timer for resend code
   const [countdown, setCountdown] = useState(0);
@@ -63,6 +64,40 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
     }
     loadSessions();
   }, []);
+
+  // Restore state from sessionStorage on mount (client-side only)
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("getmycode_attendee_state");
+      if (saved) {
+        const state = JSON.parse(saved);
+        if (state.step) setStep(state.step);
+        if (state.selectedSession) setSelectedSession(state.selectedSession);
+        if (state.email) setEmail(state.email);
+        if (state.attendanceCode) setAttendanceCode(state.attendanceCode);
+      }
+    } catch (err) {
+      console.error("Failed to load state from sessionStorage:", err);
+    } finally {
+      setIsRestored(true);
+    }
+  }, []);
+
+  // Save state to sessionStorage on state updates
+  useEffect(() => {
+    if (!isRestored) return;
+    try {
+      const state = {
+        step,
+        selectedSession,
+        email,
+        attendanceCode,
+      };
+      sessionStorage.setItem("getmycode_attendee_state", JSON.stringify(state));
+    } catch (err) {
+      console.error("Failed to save state to sessionStorage:", err);
+    }
+  }, [step, selectedSession, email, attendanceCode, isRestored]);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,6 +236,11 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
   };
 
   const handleReset = () => {
+    try {
+      sessionStorage.removeItem("getmycode_attendee_state");
+    } catch (err) {
+      console.error("Failed to clear state from sessionStorage:", err);
+    }
     setStep(1);
     setEmail("");
     setSelectedSession("");
