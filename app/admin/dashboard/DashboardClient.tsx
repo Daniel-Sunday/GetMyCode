@@ -301,17 +301,17 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                       <h3 className="font-bold text-navy text-base leading-none">
                         {session.name}
                       </h3>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-navy/60 mt-1">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-navy/60 mt-1">
                         <span className="flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5 text-navy/40" />
+                          <Calendar className="h-[18px] w-[18px] text-navy/40" />
                           {new Date(session.created_at).toLocaleDateString()}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Users className="h-3.5 w-3.5 text-navy/40" />
+                          <Users className="h-[18px] w-[18px] text-navy/40" />
                           {session.attendees_count} Attendees
                         </span>
                         <span className="flex items-center gap-1">
-                          <CheckCircle className="h-3.5 w-3.5 text-navy/40" />
+                          <CheckCircle className="h-[18px] w-[18px] text-navy/40" />
                           {session.claimed_count} Claimed
                         </span>
                       </div>
@@ -358,12 +358,12 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
           }}
         >
           <div
-            className="bg-cream rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col items-center text-center gap-6 border border-brand/10"
+            className="bg-cream rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col items-start text-left gap-6 border border-brand/10 mx-4 sm:mx-0"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Warning Icon */}
             <div className="bg-red-50 p-4 rounded-full border border-red-100 flex items-center justify-center">
-              <AlertTriangle className="h-10 w-10 text-red-600" />
+              <AlertTriangle className="h-5 w-5 sm:h-10 sm:w-10 text-red-600" />
             </div>
 
             {/* Content */}
@@ -377,7 +377,7 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
             </div>
 
             {/* Actions */}
-            <div className="grid grid-cols-2 gap-3 w-full">
+            <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 w-full">
               <button
                 type="button"
                 disabled={isDeleting}
@@ -385,7 +385,7 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                   setIsDeleteModalOpen(false);
                   setSessionToDelete(null);
                 }}
-                className="h-12 border-2 border-navy text-navy font-semibold rounded-xl hover:bg-navy/5 active:scale-[0.98] transition-all text-sm flex items-center justify-center cursor-pointer disabled:opacity-50"
+                className="h-12 w-full border-2 border-navy text-navy font-semibold rounded-xl hover:bg-navy/5 active:scale-[0.98] transition-all text-sm flex items-center justify-center cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -393,7 +393,7 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                 type="button"
                 disabled={isDeleting}
                 onClick={handleConfirmDelete}
-                className="h-12 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all text-sm flex items-center justify-center cursor-pointer disabled:opacity-50"
+                className="h-12 w-full bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all text-sm flex items-center justify-center cursor-pointer disabled:opacity-50"
               >
                 {isDeleting ? (
                   <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -458,47 +458,55 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                   No attendees in this session.
                 </div>
               ) : (
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse table-fixed">
+                  <colgroup>
+                    <col className="w-[45%] sm:w-[50%]" />
+                    <col className="w-[25%] sm:w-[20%]" />
+                    <col className="w-[20%] sm:w-[20%]" />
+                    <col className="w-[10%] sm:w-[10%]" />
+                  </colgroup>
                   <thead>
                     <tr className="border-b border-navy/10">
-                      <th className="px-4 py-2 text-xs font-bold text-navy/60 uppercase tracking-wider">Email</th>
-                      <th className="px-4 py-2 text-xs font-bold text-navy/60 uppercase tracking-wider">Code</th>
-                      <th className="px-4 py-2 text-xs font-bold text-navy/60 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-2 text-xs font-bold text-navy/60 uppercase tracking-wider text-right">Edit</th>
+                      <th className="px-2 py-2 sm:px-4 text-xs font-bold text-navy/60 uppercase tracking-wider">Email</th>
+                      <th className="px-2 py-2 sm:px-4 text-xs font-bold text-navy/60 uppercase tracking-wider">Code</th>
+                      <th className="px-2 py-2 sm:px-4 text-xs font-bold text-navy/60 uppercase tracking-wider">Status</th>
+                      <th className="px-2 py-2 sm:px-4 text-xs font-bold text-navy/60 uppercase tracking-wider text-right">Edit</th>
                     </tr>
                   </thead>
                   <tbody>
                     {attendees.map((attendee) => (
                       <tr key={attendee.id} className="border-b border-navy/5">
-                        <td className="px-4 py-3 text-sm">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-sm">
                           {editingAttendeeId === attendee.id ? (
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="email"
-                                  value={editingEmail}
-                                  onChange={(e) => setEditingEmail(e.target.value)}
-                                  className="flex-1 rounded-lg border border-brand/40 bg-white px-2.5 py-1.5 text-sm text-navy focus:border-brand focus:outline-none"
-                                  placeholder="email@example.com"
-                                  disabled={isSavingAttendeeId === attendee.id}
-                                />
+                            <div className="flex flex-col gap-1.5 w-full">
+                              <input
+                                type="email"
+                                value={editingEmail}
+                                onChange={(e) => setEditingEmail(e.target.value)}
+                                className="w-full rounded-lg border border-brand/40 bg-white px-2.5 py-1.5 text-sm text-navy focus:border-brand focus:outline-none"
+                                placeholder="email@example.com"
+                                disabled={isSavingAttendeeId === attendee.id}
+                              />
+                              <div className="flex items-center gap-2 justify-end">
                                 <button
                                   type="button"
                                   onClick={() => handleSaveEmail(attendee.id)}
                                   disabled={isSavingAttendeeId === attendee.id}
-                                  className="text-green-600 hover:text-green-700 p-1 hover:bg-green-50 rounded transition-colors cursor-pointer"
+                                  className="text-green-600 hover:text-green-700 p-1.5 hover:bg-green-50 rounded transition-colors cursor-pointer flex items-center justify-center gap-1 text-xs font-semibold min-h-[44px] min-w-[44px] px-2"
                                   title="Save"
                                 >
-                                  <Check className="h-4 w-4" />
+                                  <Check className="h-5 w-5" />
+                                  <span className="hidden sm:inline">Save</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={handleCancelEdit}
                                   disabled={isSavingAttendeeId === attendee.id}
-                                  className="text-red-600 hover:text-red-700 p-1 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                                  className="text-red-600 hover:text-red-700 p-1.5 hover:bg-red-50 rounded transition-colors cursor-pointer flex items-center justify-center gap-1 text-xs font-semibold min-h-[44px] min-w-[44px] px-2"
                                   title="Cancel"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-5 w-5" />
+                                  <span className="hidden sm:inline">Cancel</span>
                                 </button>
                               </div>
                               {saveError && (
@@ -516,10 +524,10 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                             </div>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-navy/70 font-mono">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-sm text-navy/70 font-mono">
                           {attendee.code}
                         </td>
-                        <td className="px-4 py-3 text-sm">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-sm">
                           {attendee.is_claimed ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
                               Claimed
@@ -530,15 +538,15 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-right">
+                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-sm text-right">
                           {editingAttendeeId !== attendee.id && (
                             <button
                               type="button"
                               onClick={() => handleStartEdit(attendee)}
-                              className="text-brand hover:text-brand-dark p-1 hover:bg-brand/10 rounded transition-colors cursor-pointer"
+                              className="text-brand hover:text-brand-dark p-2 hover:bg-brand/10 rounded transition-colors cursor-pointer inline-flex items-center justify-center min-h-[44px] min-w-[44px]"
                               title="Edit email"
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className="h-5 w-5" />
                             </button>
                           )}
                         </td>

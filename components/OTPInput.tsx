@@ -77,7 +77,7 @@ export default function OTPInput({ value, onChange, disabled = false }: OTPInput
   };
 
   return (
-    <div className="flex justify-between gap-2 md:gap-3 w-full max-w-sm mx-auto">
+    <div className="flex justify-between gap-2 md:gap-3 w-full max-w-sm mr-auto">
       {otp.map((digit, index) => (
         <input
           key={index}
@@ -92,7 +92,7 @@ export default function OTPInput({ value, onChange, disabled = false }: OTPInput
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
           onFocus={(e) => e.target.select()}
-          className="w-12 h-14 md:w-14 md:h-16 text-center text-2xl md:text-3xl font-bold rounded-xl border-[1.5px] border-brand/40 bg-white/50 text-navy transition-all focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none disabled:opacity-50"
+          className="w-[44px] h-[52px] sm:w-12 sm:h-14 md:w-14 md:h-16 text-center text-xl sm:text-2xl md:text-3xl font-bold rounded-xl border-[1.5px] border-brand/40 bg-white/50 text-navy transition-all focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none disabled:opacity-50"
         />
       ))}
     </div>

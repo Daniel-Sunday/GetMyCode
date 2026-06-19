@@ -58,13 +58,13 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-64px)] w-full flex flex-col items-center justify-center p-4">
       <Card className="w-full max-w-md">
         {step === 1 ? (
-          <div className="flex flex-col gap-6">
-            <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-3">
-                <Mail className="h-6 w-6 text-brand" />
+          <div className="flex flex-col gap-4 sm:gap-5 text-left">
+            <div>
+              <div className="mr-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-3">
+                <Mail className="h-5 w-5 text-brand" />
               </div>
               <h1 className="text-2xl font-bold text-navy">Verify Attendance</h1>
               <p className="text-sm text-navy/60 mt-1">
@@ -108,26 +108,26 @@ export default function VerifyPage() {
             </form>
           </div>
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 sm:gap-5 text-left">
             <button
               onClick={() => setStep(1)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-navy/60 hover:text-navy self-start"
+              className="flex items-center gap-1.5 text-xs font-semibold text-navy/60 hover:text-navy self-start transition-colors cursor-pointer"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
               Back to email
             </button>
 
-            <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-3">
-                <KeyRound className="h-6 w-6 text-brand" />
+            <div>
+              <div className="mr-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-3">
+                <KeyRound className="h-5 w-5 text-brand" />
               </div>
               <h1 className="text-2xl font-bold text-navy">Enter Verification Code</h1>
               <p className="text-sm text-navy/60 mt-1">
-                We&apos;ve sent a 6-digit code to <span className="font-semibold text-navy">{email}</span>
+                We&apos;ve sent a 6-digit code to <span className="font-semibold text-navy break-all">{email}</span>
               </p>
             </div>
 
-            <form onSubmit={handleVerifyOtp} className="flex flex-col gap-6">
+            <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4 sm:gap-5">
               <OTPInput value={otp} onChange={setOtp} disabled={isLoading} />
 
               <PrimaryButton type="submit" isLoading={isLoading}>

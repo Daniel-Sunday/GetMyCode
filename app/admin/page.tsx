@@ -38,11 +38,11 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-64px)] w-full flex flex-col items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <div className="flex flex-col gap-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-navy">Admin Login</h1>
+        <div className="flex flex-col gap-4 sm:gap-5 text-left">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-navy">Admin Login</h1>
             <p className="text-sm text-navy/60 mt-1">
               Enter your credentials to manage the sessions
             </p>

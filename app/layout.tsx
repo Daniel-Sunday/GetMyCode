@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className="font-sans antialiased bg-buttermilk text-navy min-h-screen flex flex-col"
+        className="font-sans antialiased bg-buttermilk text-navy min-h-screen flex flex-col overflow-x-hidden w-full"
       >
         <Toaster position="top-right" />
         <NavBar />
