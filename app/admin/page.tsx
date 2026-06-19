@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] w-full flex flex-col items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-64px)] w-full flex flex-col items-center justify-center py-4">
       <div className="w-full md:max-w-[400px] my-auto mx-auto">
         <Card className="w-full">
           <div className="flex flex-col gap-4 md:gap-6 xl:gap-8 text-center">

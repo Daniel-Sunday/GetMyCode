@@ -58,7 +58,7 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] w-full flex flex-col items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-64px)] w-full flex flex-col items-center justify-center py-4">
       <div className="w-full md:max-w-[480px] my-auto mx-auto">
         <Card className="w-full">
           {step === 1 ? (
