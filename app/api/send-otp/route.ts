@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     const resend = new Resend(resendApiKey);
 
     const { error: emailError } = await resend.emails.send({
-      from: "GetMyCode Verification <onboarding@resend.dev>",
+      from: "GetMyCode <noreply@getcodeidc.xyz>",
       to: trimmedEmail,
       subject: "Your Attendance Verification Code",
       html: `
