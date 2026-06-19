@@ -217,3 +217,83 @@ export async function deleteSession(sessionId: string) {
     return { success: false, error: errorMessage };
   }
 }
+
+export async function getSessionAttendees(sessionId: string) {
+  try {
+    if (!sessionId) {
+      return { success: false, error: "Session ID is required" };
+    }
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("attendees")
+      .select("id, email, code, is_claimed")
+      .eq("session_id", sessionId)
+      .order("email", { ascending: true });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, attendees: data || [] };
+  } catch (error) {
+    console.error("Get session attendees error:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred fetching attendees.";
+    return { success: false, error: errorMessage };
+  }
+}
+
+export async function updateAttendeeEmail(
+  attendeeId: string,
+  newEmail: string,
+  sessionId: string
+) {
+  try {
+    if (!attendeeId || !newEmail || !sessionId) {
+      return { success: false, error: "Attendee ID, Email, and Session ID are required" };
+    }
+
+    const cleanEmail = newEmail.trim().toLowerCase();
+
+    // Basic email validation
+    if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      return { success: false, error: "Invalid email address format" };
+    }
+
+    const supabase = createAdminClient();
+
+    // Check no duplicate email exists in the same session
+    const { data: existing, error: checkError } = await supabase
+      .from("attendees")
+      .select("id")
+      .eq("session_id", sessionId)
+      .eq("email", cleanEmail)
+      .neq("id", attendeeId)
+      .maybeSingle();
+
+    if (checkError) {
+      return { success: false, error: `Database check error: ${checkError.message}` };
+    }
+
+    if (existing) {
+      return { success: false, error: "An attendee with this email already exists in this session" };
+    }
+
+    // Update the attendee row
+    const { error: updateError } = await supabase
+      .from("attendees")
+      .update({ email: cleanEmail })
+      .eq("id", attendeeId);
+
+    if (updateError) {
+      return { success: false, error: `Update error: ${updateError.message}` };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Update attendee email error:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred during update.";
+    return { success: false, error: errorMessage };
+  }
+}
+

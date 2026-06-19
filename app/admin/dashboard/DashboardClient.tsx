@@ -7,8 +7,8 @@ import Card from "@/components/Card";
 import TextInput from "@/components/TextInput";
 import PrimaryButton from "@/components/PrimaryButton";
 import { logoutAdmin } from "../actions";
-import { uploadSession, getSessions, deleteSession } from "./actions";
-import { LogOut, PlusCircle, Database, Calendar, Users, CheckCircle, Eye, Trash2, AlertTriangle } from "lucide-react";
+import { uploadSession, getSessions, deleteSession, getSessionAttendees, updateAttendeeEmail } from "./actions";
+import { LogOut, PlusCircle, Database, Calendar, Users, CheckCircle, Eye, Trash2, AlertTriangle, Pencil, Check, X } from "lucide-react";
 
 interface Session {
   id: string;
@@ -16,6 +16,13 @@ interface Session {
   created_at: string;
   attendees_count: number;
   claimed_count: number;
+}
+
+interface Attendee {
+  id: string;
+  email: string;
+  code: string;
+  is_claimed: boolean;
 }
 
 interface DashboardClientProps {
@@ -31,6 +38,17 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
   const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+
+  // View Session Attendees Modal State
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedSessionForView, setSelectedSessionForView] = useState<Session | null>(null);
+  const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const [isAttendeesLoading, setIsAttendeesLoading] = useState(false);
+  const [editingAttendeeId, setEditingAttendeeId] = useState<string | null>(null);
+  const [editingEmail, setEditingEmail] = useState("");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSavingAttendeeId, setIsSavingAttendeeId] = useState<string | null>(null);
+  const [successAttendeeId, setSuccessAttendeeId] = useState<string | null>(null);
 
   // Sync state if initialSessions prop changes (e.g., from server-side refetches)
   useEffect(() => {
@@ -106,6 +124,95 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
       console.error(err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleViewSession = async (session: Session) => {
+    setSelectedSessionForView(session);
+    setIsViewModalOpen(true);
+    setIsAttendeesLoading(true);
+    setEditingAttendeeId(null);
+    setEditingEmail("");
+    setSaveError(null);
+    setSuccessAttendeeId(null);
+    try {
+      const result = await getSessionAttendees(session.id);
+      if (result.success && result.attendees) {
+        setAttendees(result.attendees);
+      } else {
+        toast.error(result.error || "Failed to load attendees");
+        setIsViewModalOpen(false);
+      }
+    } catch (err) {
+      toast.error("An error occurred while loading attendees.");
+      console.error(err);
+      setIsViewModalOpen(false);
+    } finally {
+      setIsAttendeesLoading(false);
+    }
+  };
+
+  const handleStartEdit = (attendee: Attendee) => {
+    setEditingAttendeeId(attendee.id);
+    setEditingEmail(attendee.email);
+    setSaveError(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAttendeeId(null);
+    setEditingEmail("");
+    setSaveError(null);
+  };
+
+  const handleSaveEmail = async (attendeeId: string) => {
+    if (!selectedSessionForView) return;
+    
+    setSaveError(null);
+    const cleanEmail = editingEmail.trim().toLowerCase();
+
+    // Validations
+    if (!cleanEmail) {
+      setSaveError("Email cannot be empty");
+      return;
+    }
+    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      setSaveError("Email must contain @ and a dot (.)");
+      return;
+    }
+
+    // Check duplicate locally
+    const isDuplicate = attendees.some(
+      (a) => a.id !== attendeeId && a.email.toLowerCase() === cleanEmail
+    );
+    if (isDuplicate) {
+      setSaveError("An attendee with this email already exists in this session");
+      return;
+    }
+
+    setIsSavingAttendeeId(attendeeId);
+    try {
+      const result = await updateAttendeeEmail(attendeeId, cleanEmail, selectedSessionForView.id);
+      if (result.success) {
+        // Update local state
+        setAttendees((prev) =>
+          prev.map((a) => (a.id === attendeeId ? { ...a, email: cleanEmail } : a))
+        );
+        setSuccessAttendeeId(attendeeId);
+        setEditingAttendeeId(null);
+        setEditingEmail("");
+        
+        // Clear success message after 2 seconds
+        setTimeout(() => {
+          setSuccessAttendeeId((prev) => (prev === attendeeId ? null : prev));
+        }, 2000);
+      } else {
+        setSaveError(result.error || "Failed to update email");
+      }
+    } catch (err) {
+      setSaveError("An unexpected error occurred.");
+      console.error(err);
+    } finally {
+      setIsSavingAttendeeId(null);
     }
   };
 
@@ -212,9 +319,10 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
 
                     <div className="flex items-center gap-2 self-end sm:self-center">
                       <button
-                        disabled
-                        className="h-12 w-12 flex items-center justify-center bg-brand/10 text-brand rounded-xl hover:bg-brand/20 transition-all cursor-not-allowed opacity-60"
-                        title="View session details (coming soon)"
+                        type="button"
+                        onClick={() => handleViewSession(session)}
+                        className="h-12 w-12 flex items-center justify-center bg-brand/10 text-brand rounded-xl hover:bg-brand/20 active:scale-95 transition-all cursor-pointer"
+                        title="View session details"
                       >
                         <Eye className="h-5 w-5" />
                       </button>
@@ -293,6 +401,152 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                   "Yes, Delete It"
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Session Attendees Modal */}
+      {isViewModalOpen && selectedSessionForView && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/60 backdrop-blur-xs"
+          onClick={() => {
+            if (!isSavingAttendeeId) {
+              setIsViewModalOpen(false);
+              setSelectedSessionForView(null);
+              setAttendees([]);
+            }
+          }}
+        >
+          <div
+            className="bg-cream rounded-2xl max-w-[600px] w-full p-6 shadow-2xl flex flex-col gap-6 border border-brand/10 relative max-h-[85vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              type="button"
+              disabled={!!isSavingAttendeeId}
+              onClick={() => {
+                setIsViewModalOpen(false);
+                setSelectedSessionForView(null);
+                setAttendees([]);
+              }}
+              className="absolute top-4 right-4 text-navy/40 hover:text-navy p-1 hover:bg-navy/5 rounded transition-all cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="border-b border-navy/10 pb-4 pr-8">
+              <h3 className="text-xl font-bold text-navy font-poppins">
+                {selectedSessionForView.name}
+              </h3>
+              <p className="text-xs text-navy/60 mt-1">
+                Total Attendees: {attendees.length}
+              </p>
+            </div>
+
+            {/* Modal Content / Attendees Table */}
+            <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[50vh] pr-1">
+              {isAttendeesLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                  <div className="h-8 w-8 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
+                  <span className="text-sm font-medium text-navy/60">Loading attendees...</span>
+                </div>
+              ) : attendees.length === 0 ? (
+                <div className="text-center py-12 text-navy/50 text-sm">
+                  No attendees in this session.
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-navy/10">
+                      <th className="px-4 py-2 text-xs font-bold text-navy/60 uppercase tracking-wider">Email</th>
+                      <th className="px-4 py-2 text-xs font-bold text-navy/60 uppercase tracking-wider">Code</th>
+                      <th className="px-4 py-2 text-xs font-bold text-navy/60 uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-2 text-xs font-bold text-navy/60 uppercase tracking-wider text-right">Edit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attendees.map((attendee) => (
+                      <tr key={attendee.id} className="border-b border-navy/5">
+                        <td className="px-4 py-3 text-sm">
+                          {editingAttendeeId === attendee.id ? (
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="email"
+                                  value={editingEmail}
+                                  onChange={(e) => setEditingEmail(e.target.value)}
+                                  className="flex-1 rounded-lg border border-brand/40 bg-white px-2.5 py-1.5 text-sm text-navy focus:border-brand focus:outline-none"
+                                  placeholder="email@example.com"
+                                  disabled={isSavingAttendeeId === attendee.id}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveEmail(attendee.id)}
+                                  disabled={isSavingAttendeeId === attendee.id}
+                                  className="text-green-600 hover:text-green-700 p-1 hover:bg-green-50 rounded transition-colors cursor-pointer"
+                                  title="Save"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleCancelEdit}
+                                  disabled={isSavingAttendeeId === attendee.id}
+                                  className="text-red-600 hover:text-red-700 p-1 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                                  title="Cancel"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                              {saveError && (
+                                <span className="text-xs text-red-600 font-semibold">{saveError}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="text-navy font-medium break-all">{attendee.email}</span>
+                              {successAttendeeId === attendee.id && (
+                                <span className="text-xs text-green-600 font-bold animate-fade-out">
+                                  Updated ✓
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-navy/70 font-mono">
+                          {attendee.code}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {attendee.is_claimed ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                              Claimed
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                              Unclaimed
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right">
+                          {editingAttendeeId !== attendee.id && (
+                            <button
+                              type="button"
+                              onClick={() => handleStartEdit(attendee)}
+                              className="text-brand hover:text-brand-dark p-1 hover:bg-brand/10 rounded transition-colors cursor-pointer"
+                              title="Edit email"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
