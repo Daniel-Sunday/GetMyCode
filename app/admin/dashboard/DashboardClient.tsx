@@ -458,13 +458,13 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                   No attendees in this session.
                 </div>
               ) : (
-                <div className="overflow-x-auto w-full min-w-0">
-                  <table className="w-full text-left border-collapse table-fixed min-w-[480px] sm:min-w-0">
+                <div className="w-full min-w-0">
+                  <table className="table-fixed w-full text-left border-collapse">
                     <colgroup>
-                      <col className="w-[45%] sm:w-[50%]" />
-                      <col className="w-[25%] sm:w-[20%]" />
-                      <col className="w-[20%] sm:w-[20%]" />
-                      <col className="w-[10%] sm:w-[10%]" />
+                      <col className="w-[65%]" />
+                      <col className="w-[15%]" />
+                      <col className="w-[12%]" />
+                      <col className="w-[8%]" />
                     </colgroup>
                     <thead>
                       <tr className="border-b border-navy/10">
@@ -477,7 +477,7 @@ export default function DashboardClient({ initialSessions }: DashboardClientProp
                     <tbody>
                       {attendees.map((attendee) => (
                         <tr key={attendee.id} className="border-b border-navy/5">
-                          <td className="px-2 py-2 sm:px-4 sm:py-3 text-sm">
+                          <td className="px-2 py-2 sm:px-4 sm:py-3 text-sm break-all">
                             {editingAttendeeId === attendee.id ? (
                               <div className="flex flex-col gap-1.5 w-full">
                                 <input
