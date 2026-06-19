@@ -25,8 +25,32 @@ export default function OTPInput({ value, onChange, disabled = false }: OTPInput
   };
 
   const handleChange = (index: number, val: string) => {
-    // Take the last character typed to handle overwrite/replace
-    const sanitizedVal = val.slice(-1);
+    // Sanitize non-alphanumeric characters (like spaces, hyphens, etc.)
+    const cleanVal = val.replace(/[^a-zA-Z0-9]/g, "");
+
+    // Check if the value is a multi-character paste or autofill
+    if (cleanVal.length > 1) {
+      // If it's a full 6-digit code, start filling from index 0; otherwise fill from current index
+      const isFullCode = cleanVal.length >= 6;
+      const startIndex = isFullCode ? 0 : index;
+      const pasteData = cleanVal.slice(0, 6 - startIndex);
+
+      const newOtp = [...otp];
+      for (let i = 0; i < pasteData.length; i++) {
+        if (startIndex + i < 6) {
+          newOtp[startIndex + i] = pasteData[i];
+        }
+      }
+      handleOtpChange(newOtp);
+
+      // Focus the next empty input or the last input
+      const nextFocusIndex = Math.min(startIndex + pasteData.length, 5);
+      inputRefs.current[nextFocusIndex]?.focus();
+      return;
+    }
+
+    // Single character input or delete
+    const sanitizedVal = cleanVal.slice(-1);
     const newOtp = [...otp];
     newOtp[index] = sanitizedVal;
     handleOtpChange(newOtp);
@@ -60,8 +84,9 @@ export default function OTPInput({ value, onChange, disabled = false }: OTPInput
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pasteData = e.clipboardData.getData("text").trim().slice(0, 6);
-    if (!/^[a-zA-Z0-9]+$/.test(pasteData)) return; // Allow alphanumeric characters
+    const rawData = e.clipboardData.getData("text");
+    const pasteData = rawData.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6);
+    if (!pasteData) return;
 
     const newOtp = [...otp];
     for (let i = 0; i < 6; i++) {
@@ -85,6 +110,9 @@ export default function OTPInput({ value, onChange, disabled = false }: OTPInput
           maxLength={1}
           value={digit}
           disabled={disabled}
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete={index === 0 ? "one-time-code" : "off"}
           ref={(el) => {
             inputRefs.current[index] = el;
           }}
