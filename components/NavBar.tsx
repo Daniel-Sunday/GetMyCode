@@ -11,17 +11,17 @@ export default function NavBar() {
   const isAdminActive = pathname.startsWith("/admin");
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-cream border-b border-brand/20 flex flex-row items-center justify-between px-4 md:px-8 whitespace-nowrap overflow-hidden">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-cream border-b border-brand/20 flex flex-row items-center justify-between px-4 md:px-8 xl:px-12 whitespace-nowrap overflow-hidden">
       {/* Brand logo */}
       <Link
         href="/"
-        className="text-xs sm:text-sm md:text-lg font-bold text-brand font-sans tracking-widest select-none transition-all"
+        className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-brand font-sans tracking-widest select-none transition-all"
       >
         GetMyCode
       </Link>
 
       {/* Tabs */}
-      <div className="flex flex-row gap-4 sm:gap-6 h-full items-center whitespace-nowrap">
+      <div className="flex flex-row gap-4 md:gap-6 xl:gap-8 h-full items-center whitespace-nowrap">
         <Link
           href="/"
           className={`relative h-full flex items-center text-sm font-semibold transition-all duration-200 ${

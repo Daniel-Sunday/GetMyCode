@@ -13,7 +13,7 @@ export default function TextInput({
   ...props
 }: TextInputProps) {
   return (
-    <div className="flex flex-col gap-1.5 w-full">
+    <div className="flex flex-col gap-1.5 w-full text-left">
       {label && (
         <label htmlFor={id} className="text-sm font-semibold text-navy">
           {label}

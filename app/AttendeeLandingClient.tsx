@@ -213,19 +213,17 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
 
   return (
     <div className="min-h-[calc(100vh-64px)] w-full flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-[420px] my-auto">
-
-
+      <div className="w-full md:max-w-[480px] my-auto mx-auto">
         <Card className="w-full">
           {hasNoSessions ? (
             /* Empty State: No Sessions Found */
-            <div className="flex flex-col gap-5 text-center py-4">
+            <div className="flex flex-col gap-4 md:gap-6 text-center py-4">
               <div className="mx-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-1">
                 <AlertCircle className="h-5 w-5 text-brand" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-navy">No active sessions</h2>
-                <p className="text-sm text-navy/60 mt-1.5 leading-relaxed">
+                <h2 className="text-xl md:text-2xl font-bold text-navy">No active sessions</h2>
+                <p className="text-sm md:text-base text-navy/60 mt-1.5 leading-relaxed">
                   No active sessions right now. Check back after class.
                 </p>
               </div>
@@ -237,7 +235,7 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                     setIsSessionsLoading(false);
                   });
                 }}
-                className="flex items-center justify-center gap-1.5 text-xs font-semibold text-brand hover:underline mt-2 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 text-sm font-semibold text-brand hover:underline mt-2 cursor-pointer"
               >
                 <RefreshCw className="h-5 w-5 animate-spin-once" />
                 <span>Retry fetching sessions</span>
@@ -245,16 +243,16 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
             </div>
           ) : step === 1 ? (
             /* Step 1: Session & Email Selection */
-            <div className="flex flex-col gap-4 sm:gap-5 text-left">
+            <div className="flex flex-col gap-4 md:gap-6 xl:gap-8 text-center">
               <div>
-                <h1 className="text-2xl font-bold text-navy">Get Your Attendance Code</h1>
-                <p className="text-sm text-navy/60 mt-1.5">
+                <h1 className="text-xl md:text-2xl xl:text-3xl font-bold text-navy">Get Your Attendance Code</h1>
+                <p className="text-sm md:text-base text-navy/60 mt-1.5">
                   Enter the email you used to join the class
                 </p>
               </div>
 
-              <form onSubmit={handleSendCode} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5 w-full">
+              <form onSubmit={handleSendCode} className="flex flex-col gap-4 md:gap-6">
+                <div className="flex flex-col gap-1.5 w-full text-left">
                   <label htmlFor="sessionSelect" className="text-sm font-semibold text-navy">
                     Select Session
                   </label>
@@ -296,6 +294,7 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                   }}
                   error={emailError}
                   disabled={isLoading || isSessionsLoading}
+                  className="text-left"
                 />
 
                 {isEmailNotFound && (
@@ -311,7 +310,7 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                   <PrimaryButton type="submit" isLoading={isLoading || isSessionsLoading} disabled={isSessionsLoading}>
                     Send Verification Code
                   </PrimaryButton>
-                  <p className="text-left text-xs text-navy/50 px-1">
+                  <p className="text-center text-sm md:text-base text-navy/50 px-1">
                     A 6-digit code will be sent to your email
                   </p>
                 </div>
@@ -319,40 +318,40 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
             </div>
           ) : step === 2 ? (
             /* Step 2: OTP Verification */
-            <div className="flex flex-col gap-4 sm:gap-5 text-left">
+            <div className="flex flex-col gap-4 md:gap-6 xl:gap-8 text-center">
               <button
                 onClick={() => setStep(1)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-navy/60 hover:text-navy self-start transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-sm font-semibold text-navy/60 hover:text-navy self-start transition-colors cursor-pointer"
               >
                 <ArrowLeft className="h-5 w-5" />
                 Change email
               </button>
 
               <div>
-                <h1 className="text-2xl font-bold text-navy">Check your email</h1>
-                <p className="text-sm text-navy/60 mt-1.5">
+                <h1 className="text-xl md:text-2xl xl:text-3xl font-bold text-navy">Check your email</h1>
+                <p className="text-sm md:text-base text-navy/60 mt-1.5">
                   We sent a 6-digit code to{" "}
                   <span className="font-semibold text-navy break-all">{email}</span>
                 </p>
               </div>
 
-              <form onSubmit={handleVerifyCode} className="flex flex-col gap-4 sm:gap-5">
+              <form onSubmit={handleVerifyCode} className="flex flex-col gap-4 md:gap-6">
                 <OTPInput value={otp} onChange={setOtp} disabled={isLoading} />
 
-                <div className="flex flex-col gap-3 sm:gap-3.5 items-start w-full">
+                <div className="flex flex-col gap-3 md:gap-4 items-center w-full">
                   <PrimaryButton type="submit" isLoading={isLoading}>
                     Verify Code
                   </PrimaryButton>
 
                   {countdown > 0 ? (
-                    <span className="text-xs font-semibold text-navy/40 px-1">
+                    <span className="text-center text-sm md:text-base font-semibold text-navy/40 px-1">
                       Resend code in {countdown}s
                     </span>
                   ) : (
                     <button
                       type="button"
                       onClick={handleResendCode}
-                      className="text-xs font-semibold text-brand hover:underline px-1"
+                      className="text-center text-sm md:text-base font-semibold text-brand hover:underline px-1"
                     >
                       Resend code
                     </button>
@@ -362,10 +361,10 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
             </div>
           ) : (
             /* Step 3: Code Reveal View */
-            <div className="flex flex-col gap-4 sm:gap-5 text-left animate-reveal">
+            <div className="flex flex-col gap-4 md:gap-6 xl:gap-8 text-center animate-reveal">
               <div>
-                <h1 className="text-2xl font-bold text-navy">Here&apos;s your code</h1>
-                <p className="text-sm text-navy/60 mt-1.5 leading-relaxed">
+                <h1 className="text-xl md:text-2xl xl:text-3xl font-bold text-navy">Here&apos;s your code</h1>
+                <p className="text-sm md:text-base text-navy/60 mt-1.5 leading-relaxed">
                   Copy it and paste it on the Imodigitalcity website to mark your attendance
                 </p>
               </div>
@@ -388,20 +387,20 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                 </span>
               </div>
 
-              <div className="flex flex-col gap-3 sm:gap-3.5 items-start w-full">
+              <div className="flex flex-col gap-3 md:gap-4 items-center w-full">
                 <PrimaryButton onClick={handleCopy} className="flex gap-2">
                   {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
                   <span>{copied ? "Copied ✓" : "Copy Code"}</span>
                 </PrimaryButton>
 
-                <div className="flex items-center gap-1.5 text-xs text-navy/60">
+                <div className="flex items-center justify-center gap-1.5 text-sm text-navy/60 text-center w-full">
                   <AlertCircle className="h-5 w-5 text-brand shrink-0" />
                   <span>This code is now yours. Do not share it.</span>
                 </div>
 
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-navy/50 hover:text-navy mt-2 sm:mt-4 transition-colors cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 text-sm md:text-base font-semibold text-navy/50 hover:text-navy mt-2 sm:mt-4 transition-colors cursor-pointer"
                 >
                   <RefreshCw className="h-5 w-5" />
                   <span>Verify another code</span>

@@ -20,7 +20,7 @@ export default function RootLayout({
       >
         <Toaster position="top-right" />
         <NavBar />
-        <main className="pt-16 flex-1 flex flex-col">
+        <main className="pt-16 flex-1 flex flex-col px-4 md:px-8 max-w-[1200px] mx-auto w-full">
           {children}
         </main>
       </body>

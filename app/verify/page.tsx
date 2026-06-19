@@ -59,84 +59,87 @@ export default function VerifyPage() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] w-full flex flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        {step === 1 ? (
-          <div className="flex flex-col gap-4 sm:gap-5 text-left">
-            <div>
-              <div className="mr-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-3">
-                <Mail className="h-5 w-5 text-brand" />
+      <div className="w-full md:max-w-[480px] my-auto mx-auto">
+        <Card className="w-full">
+          {step === 1 ? (
+            <div className="flex flex-col gap-4 md:gap-6 xl:gap-8 text-center">
+              <div>
+                <div className="mx-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-3">
+                  <Mail className="h-5 w-5 text-brand" />
+                </div>
+                <h1 className="text-xl md:text-2xl xl:text-3xl font-bold text-navy">Verify Attendance</h1>
+                <p className="text-sm md:text-base text-navy/60 mt-1">
+                  Select your session and enter your email to claim your code.
+                </p>
               </div>
-              <h1 className="text-2xl font-bold text-navy">Verify Attendance</h1>
-              <p className="text-sm text-navy/60 mt-1">
-                Select your session and enter your email to claim your code.
-              </p>
+
+              <form onSubmit={handleSendOtp} className="flex flex-col gap-4 md:gap-6">
+                <div className="flex flex-col gap-1.5 w-full text-left">
+                  <label htmlFor="sessionSelect" className="text-sm font-semibold text-navy">
+                    Select Session
+                  </label>
+                  <select
+                    id="sessionSelect"
+                    value={selectedSession}
+                    onChange={(e) => setSelectedSession(e.target.value)}
+                    className="w-full rounded-xl border-[1.5px] border-brand/40 bg-white/50 px-4 py-3 font-medium text-navy transition-all focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none"
+                  >
+                    <option value="" disabled>-- Choose a session --</option>
+                    {MOCK_SESSIONS.map((session) => (
+                      <option key={session.id} value={session.id}>
+                        {session.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <TextInput
+                  id="email"
+                  type="email"
+                  label="Email Address"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  className="text-left"
+                />
+
+                <PrimaryButton type="submit" isLoading={isLoading}>
+                  Send Code
+                </PrimaryButton>
+              </form>
             </div>
+          ) : (
+            <div className="flex flex-col gap-4 md:gap-6 xl:gap-8 text-center">
+              <button
+                onClick={() => setStep(1)}
+                className="flex items-center gap-1.5 text-sm font-semibold text-navy/60 hover:text-navy self-start transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                Back to email
+              </button>
 
-            <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5 w-full">
-                <label htmlFor="sessionSelect" className="text-sm font-semibold text-navy">
-                  Select Session
-                </label>
-                <select
-                  id="sessionSelect"
-                  value={selectedSession}
-                  onChange={(e) => setSelectedSession(e.target.value)}
-                  className="w-full rounded-xl border-[1.5px] border-brand/40 bg-white/50 px-4 py-3 font-medium text-navy transition-all focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none"
-                >
-                  <option value="" disabled>-- Choose a session --</option>
-                  {MOCK_SESSIONS.map((session) => (
-                    <option key={session.id} value={session.id}>
-                      {session.name}
-                    </option>
-                  ))}
-                </select>
+              <div>
+                <div className="mx-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-3">
+                  <KeyRound className="h-5 w-5 text-brand" />
+                </div>
+                <h1 className="text-xl md:text-2xl xl:text-3xl font-bold text-navy">Enter Verification Code</h1>
+                <p className="text-sm md:text-base text-navy/60 mt-1">
+                  We&apos;ve sent a 6-digit code to <span className="font-semibold text-navy break-all">{email}</span>
+                </p>
               </div>
 
-              <TextInput
-                id="email"
-                type="email"
-                label="Email Address"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-              />
+              <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4 md:gap-6">
+                <OTPInput value={otp} onChange={setOtp} disabled={isLoading} />
 
-              <PrimaryButton type="submit" isLoading={isLoading}>
-                Send Code
-              </PrimaryButton>
-            </form>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4 sm:gap-5 text-left">
-            <button
-              onClick={() => setStep(1)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-navy/60 hover:text-navy self-start transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              Back to email
-            </button>
-
-            <div>
-              <div className="mr-auto w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-3">
-                <KeyRound className="h-5 w-5 text-brand" />
-              </div>
-              <h1 className="text-2xl font-bold text-navy">Enter Verification Code</h1>
-              <p className="text-sm text-navy/60 mt-1">
-                We&apos;ve sent a 6-digit code to <span className="font-semibold text-navy break-all">{email}</span>
-              </p>
+                <PrimaryButton type="submit" isLoading={isLoading}>
+                  Verify &amp; Reveal Code
+                </PrimaryButton>
+              </form>
             </div>
-
-            <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4 sm:gap-5">
-              <OTPInput value={otp} onChange={setOtp} disabled={isLoading} />
-
-              <PrimaryButton type="submit" isLoading={isLoading}>
-                Verify &amp; Reveal Code
-              </PrimaryButton>
-            </form>
-          </div>
-        )}
-      </Card>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }
