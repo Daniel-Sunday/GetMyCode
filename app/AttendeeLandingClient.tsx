@@ -7,7 +7,7 @@ import TextInput from "@/components/TextInput";
 import OTPInput from "@/components/OTPInput";
 import PrimaryButton from "@/components/PrimaryButton";
 import { getSessions } from "@/app/admin/dashboard/actions";
-import { ArrowLeft, Check, Copy, RefreshCw, AlertCircle } from "lucide-react";
+import { ArrowLeft, Check, Copy, RefreshCw, AlertCircle, Info } from "lucide-react";
 
 interface Session {
   id: string;
@@ -31,6 +31,7 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
   const [isSessionsLoading, setIsSessionsLoading] = useState(true);
   const [sessions, setSessions] = useState<Session[]>(initialSessions);
   const [emailError, setEmailError] = useState("");
+  const [isEmailNotFound, setIsEmailNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
   
   // Timer for resend code
@@ -66,6 +67,7 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
+    setIsEmailNotFound(false);
 
     if (!selectedSession) {
       toast.error("Please select a session");
@@ -95,8 +97,12 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
         setStep(2);
         setCountdown(30);
       } else {
-        setEmailError(data.error || "Failed to send verification code");
-        toast.error(data.error || "Verification failed");
+        if (response.status === 404) {
+          setIsEmailNotFound(true);
+        } else {
+          setEmailError(data.error || "Failed to send verification code");
+          toast.error(data.error || "Verification failed");
+        }
       }
     } catch (err) {
       console.error(err);
@@ -255,7 +261,10 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                   <select
                     id="sessionSelect"
                     value={selectedSession}
-                    onChange={(e) => setSelectedSession(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedSession(e.target.value);
+                      setIsEmailNotFound(false);
+                    }}
                     disabled={isLoading || isSessionsLoading}
                     className="w-full rounded-xl border-[1.5px] border-brand/40 bg-white/50 px-4 py-3 font-medium text-navy transition-all focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none disabled:opacity-50"
                   >
@@ -283,10 +292,20 @@ export default function AttendeeLandingClient({ initialSessions }: AttendeeLandi
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (emailError) setEmailError("");
+                    if (isEmailNotFound) setIsEmailNotFound(false);
                   }}
                   error={emailError}
                   disabled={isLoading || isSessionsLoading}
                 />
+
+                {isEmailNotFound && (
+                  <div className="flex gap-3 bg-amber-50 border border-amber-200/50 rounded-xl p-4 animate-fade-in text-left">
+                    <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-sm font-medium text-amber-900 leading-relaxed">
+                      Email not found. If you believe this is an error, contact your coordinator.
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-2.5">
                   <PrimaryButton type="submit" isLoading={isLoading || isSessionsLoading} disabled={isSessionsLoading}>
